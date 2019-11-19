@@ -2,6 +2,7 @@ package com.epages.restdocs.apispec
 
 import com.epages.restdocs.apispec.ResourceDocumentation.parameterWithName
 import com.epages.restdocs.apispec.ResourceDocumentation.resource
+import com.epages.restdocs.apispec.Schema.Companion.schema
 import com.jayway.jsonpath.DocumentContext
 import com.jayway.jsonpath.JsonPath
 import org.assertj.core.api.BDDAssertions.then
@@ -76,42 +77,29 @@ class ResourceSnippetTest {
         thenResourceSnippetContainsCommonRequestAttributes()
 
         then(resourceSnippetJson.read<List<*>>("tags")).hasSize(3)
+        thenResourceSnippetContainsRequestAndResponseParameters()
+    }
 
-        then(resourceSnippetJson.read<List<*>>("request.headers")).hasSize(1)
-        then(resourceSnippetJson.read<String>("request.headers[0].name")).isNotEmpty()
-        then(resourceSnippetJson.read<String>("request.headers[0].description")).isNotEmpty()
-        then(resourceSnippetJson.read<String>("request.headers[0].type")).isNotEmpty()
-        then(resourceSnippetJson.read<Boolean>("request.headers[0].optional")).isFalse()
-        then(resourceSnippetJson.read<String>("request.headers[0].example")).isNotEmpty()
+    @Test
+    fun should_generate_resourcemodel_for_operation_with_request_and_response_body_with_schema(){
+        givenOperationWithRequestAndResponseBody()
+        givenRequestFieldDescriptorsWithSchema()
+        givenResponseFieldDescriptorsWithSchema()
+        givenPathParameterDescriptors()
+        givenRequestParameterDescriptors()
+        givenRequestAndResponseHeaderDescriptors()
+        givenTag()
 
-        then(resourceSnippetJson.read<List<*>>("request.pathParameters")).hasSize(1)
-        then(resourceSnippetJson.read<String>("request.pathParameters[0].name")).isNotEmpty()
-        then(resourceSnippetJson.read<String>("request.pathParameters[0].description")).isNotEmpty()
-        then(resourceSnippetJson.read<String>("request.pathParameters[0].type")).isNotEmpty()
-        then(resourceSnippetJson.read<Boolean>("request.pathParameters[0].optional")).isFalse()
-        then(resourceSnippetJson.read<Boolean>("request.pathParameters[0].ignored")).isFalse()
+        whenResourceSnippetInvoked()
 
-        then(resourceSnippetJson.read<List<*>>("request.requestParameters")).hasSize(1)
-        then(resourceSnippetJson.read<String>("request.requestParameters[0].name")).isNotEmpty()
-        then(resourceSnippetJson.read<String>("request.requestParameters[0].description")).isNotEmpty()
-        then(resourceSnippetJson.read<String>("request.requestParameters[0].type")).isNotEmpty()
-        then(resourceSnippetJson.read<Boolean>("request.requestParameters[0].optional")).isFalse()
-        then(resourceSnippetJson.read<Boolean>("request.requestParameters[0].ignored")).isFalse()
+        thenSnippetFileExists()
+        thenSnippetFileHasCommonRequestAttributes()
+        thenResourceSnippetContainsCommonRequestAttributes()
 
-        then(resourceSnippetJson.read<List<String>>("request.securityRequirements.requiredScopes")).containsExactly("scope1", "scope2")
-        then(resourceSnippetJson.read<String>("request.securityRequirements.type")).isEqualTo("OAUTH2")
-
-        then(resourceSnippetJson.read<String>("request.example")).isNotEmpty()
-
-        then(resourceSnippetJson.read<Int>("response.status")).isEqualTo(HttpStatus.CREATED.value())
-        then(resourceSnippetJson.read<String>("response.example")).isNotEmpty()
-
-        then(resourceSnippetJson.read<List<*>>("response.headers")).hasSize(1)
-        then(resourceSnippetJson.read<String>("response.headers[0].name")).isNotEmpty()
-        then(resourceSnippetJson.read<String>("response.headers[0].description")).isNotEmpty()
-        then(resourceSnippetJson.read<String>("response.headers[0].type")).isNotEmpty()
-        then(resourceSnippetJson.read<Boolean>("response.headers[0].optional")).isFalse()
-        then(resourceSnippetJson.read<String>("response.headers[0].example")).isNotEmpty()
+        then(resourceSnippetJson.read<List<*>>("tags")).hasSize(3)
+        thenResourceSnippetContainsRequestAndResponseParameters()
+        then(resourceSnippetJson.read<String>("request.requestSchema.name")).isEqualTo("TestRequestSchema")
+        then(resourceSnippetJson.read<String>("response.responseSchema.name")).isEqualTo("TestResponseSchema")
     }
 
     @Test
@@ -184,6 +172,44 @@ class ResourceSnippetTest {
         then(JsonFieldType.valueOf(resourceSnippetJson.read("request.requestFields[0].type"))).isNotNull()
         then(resourceSnippetJson.read<Boolean>("request.requestFields[0].optional")).isFalse()
         then(resourceSnippetJson.read<Boolean>("request.requestFields[0].ignored")).isFalse()
+    }
+
+    private fun thenResourceSnippetContainsRequestAndResponseParameters() {
+        then(resourceSnippetJson.read<List<*>>("request.headers")).hasSize(1)
+        then(resourceSnippetJson.read<String>("request.headers[0].name")).isNotEmpty()
+        then(resourceSnippetJson.read<String>("request.headers[0].description")).isNotEmpty()
+        then(resourceSnippetJson.read<String>("request.headers[0].type")).isNotEmpty()
+        then(resourceSnippetJson.read<Boolean>("request.headers[0].optional")).isFalse()
+        then(resourceSnippetJson.read<String>("request.headers[0].example")).isNotEmpty()
+
+        then(resourceSnippetJson.read<List<*>>("request.pathParameters")).hasSize(1)
+        then(resourceSnippetJson.read<String>("request.pathParameters[0].name")).isNotEmpty()
+        then(resourceSnippetJson.read<String>("request.pathParameters[0].description")).isNotEmpty()
+        then(resourceSnippetJson.read<String>("request.pathParameters[0].type")).isNotEmpty()
+        then(resourceSnippetJson.read<Boolean>("request.pathParameters[0].optional")).isFalse()
+        then(resourceSnippetJson.read<Boolean>("request.pathParameters[0].ignored")).isFalse()
+
+        then(resourceSnippetJson.read<List<*>>("request.requestParameters")).hasSize(1)
+        then(resourceSnippetJson.read<String>("request.requestParameters[0].name")).isNotEmpty()
+        then(resourceSnippetJson.read<String>("request.requestParameters[0].description")).isNotEmpty()
+        then(resourceSnippetJson.read<String>("request.requestParameters[0].type")).isNotEmpty()
+        then(resourceSnippetJson.read<Boolean>("request.requestParameters[0].optional")).isFalse()
+        then(resourceSnippetJson.read<Boolean>("request.requestParameters[0].ignored")).isFalse()
+
+        then(resourceSnippetJson.read<List<String>>("request.securityRequirements.requiredScopes")).containsExactly("scope1", "scope2")
+        then(resourceSnippetJson.read<String>("request.securityRequirements.type")).isEqualTo("OAUTH2")
+
+        then(resourceSnippetJson.read<String>("request.example")).isNotEmpty()
+
+        then(resourceSnippetJson.read<Int>("response.status")).isEqualTo(HttpStatus.CREATED.value())
+        then(resourceSnippetJson.read<String>("response.example")).isNotEmpty()
+
+        then(resourceSnippetJson.read<List<*>>("response.headers")).hasSize(1)
+        then(resourceSnippetJson.read<String>("response.headers[0].name")).isNotEmpty()
+        then(resourceSnippetJson.read<String>("response.headers[0].description")).isNotEmpty()
+        then(resourceSnippetJson.read<String>("response.headers[0].type")).isNotEmpty()
+        then(resourceSnippetJson.read<Boolean>("response.headers[0].optional")).isFalse()
+        then(resourceSnippetJson.read<String>("response.headers[0].example")).isNotEmpty()
     }
 
     private fun thenSnippetFileHasCommonRequestAttributes() {
@@ -307,8 +333,16 @@ class ResourceSnippetTest {
         parametersBuilder.requestFields(fieldWithPath("comment").description("description"))
     }
 
+    private fun givenRequestFieldDescriptorsWithSchema(){
+        parametersBuilder.requestFields(schema("TestRequestSchema"), fieldWithPath("comment").description("description"))
+    }
+
     private fun givenResponseFieldDescriptors() {
         parametersBuilder.responseFields(fieldWithPath("comment").description("description"))
+    }
+
+    private fun givenResponseFieldDescriptorsWithSchema() {
+        parametersBuilder.responseFields(schema("TestResponseSchema"), fieldWithPath("comment").description("description"))
     }
 
     private fun givenIgnoredAndNotIgnoredRequestFieldDescriptors() {

@@ -20,7 +20,9 @@ data class ResourceSnippetParameters @JvmOverloads constructor(
     val privateResource: Boolean = false,
     val deprecated: Boolean = false,
     val requestFields: List<FieldDescriptor> = emptyList(),
+    var requestSchema: Schema? = null,
     val responseFields: List<FieldDescriptor> = emptyList(),
+    var responseSchema: Schema? = null,
     val links: List<LinkDescriptor> = emptyList(),
     val pathParameters: List<ParameterDescriptorWithType> = emptyList(),
     val requestParameters: List<ParameterDescriptorWithType> = emptyList(),
@@ -159,7 +161,11 @@ abstract class ResourceSnippetDetails {
 class ResourceSnippetParametersBuilder : ResourceSnippetDetails() {
     var requestFields: List<FieldDescriptor> = emptyList()
         private set
+    var requestSchema: Schema? = null
+        private set
     var responseFields: List<FieldDescriptor> = emptyList()
+        private set
+    var responseSchema: Schema? = null
         private set
     var links: List<LinkDescriptor> = emptyList()
         private set
@@ -178,12 +184,22 @@ class ResourceSnippetParametersBuilder : ResourceSnippetDetails() {
     override fun deprecated(deprecated: Boolean) = apply { this.deprecated = deprecated }
 
     fun requestFields(vararg requestFields: FieldDescriptor) = requestFields(requestFields.toList())
-    fun requestFields(requestFields: List<FieldDescriptor>) = apply { this.requestFields = requestFields }
+    fun requestFields(requestSchema: Schema, vararg requestFields: FieldDescriptor) = requestFields(requestFields.toList(), requestSchema)
     fun requestFields(fieldDescriptors: FieldDescriptors) = requestFields(fieldDescriptors.fieldDescriptors)
+    fun requestFields(requestSchema: Schema, fieldDescriptors: FieldDescriptors) = requestFields(fieldDescriptors.fieldDescriptors, requestSchema)
+    fun requestFields(requestFields: List<FieldDescriptor>, requestSchema: Schema? = null) = apply {
+        this.requestFields = requestFields
+        this.requestSchema = requestSchema
+    }
 
     fun responseFields(vararg responseFields: FieldDescriptor) = responseFields(responseFields.toList())
-    fun responseFields(responseFields: List<FieldDescriptor>) = apply { this.responseFields = responseFields }
+    fun responseFields(responseSchema: Schema, vararg responseFields: FieldDescriptor) = responseFields(responseFields.toList(), responseSchema)
     fun responseFields(fieldDescriptors: FieldDescriptors) = responseFields(fieldDescriptors.fieldDescriptors)
+    fun responseFields(responseSchema: Schema, fieldDescriptors: FieldDescriptors) = responseFields(fieldDescriptors.fieldDescriptors, responseSchema)
+    fun responseFields(responseFields: List<FieldDescriptor>, responseSchema: Schema? = null) = apply {
+        this.responseFields = responseFields
+        this.responseSchema = responseSchema
+    }
 
     fun links(vararg links: LinkDescriptor) = apply { links(links.toList()) }
     fun links(links: List<LinkDescriptor>) = apply { this.links = links }
@@ -221,7 +237,9 @@ class ResourceSnippetParametersBuilder : ResourceSnippetDetails() {
         privateResource,
         deprecated,
         requestFields,
+        requestSchema,
         responseFields,
+        responseSchema,
         links,
         pathParameters,
         requestParameters,
