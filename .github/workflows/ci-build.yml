@@ -3,7 +3,8 @@ name: rest-docs-api-spec Fork Build
 on:
   push:
     branches:
-      - publish-fork
+      - master
+      - 'feature/**'
 
 jobs:
   ci-build:
